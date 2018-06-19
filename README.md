@@ -1,4 +1,8 @@
-npm install
-nodemon start
+Installation instructions:
 
-(need to install nodemon globally or just run npm start)
+  ```sh
+$ npm install
+$ npm start
+OR
+$ nodemon start
+```

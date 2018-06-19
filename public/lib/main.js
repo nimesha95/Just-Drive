@@ -49,13 +49,17 @@ function init() {
 
 
     var textureLoader  = new THREE.TextureLoader();
-    crateTexture = new textureLoader.load("lib/textures/crate/crate0_diffuse.png");
+    crateTexture = textureLoader.load("lib/textures/crate/crate0_diffuse.png");
+    crateBumpMap = textureLoader.load("lib/textures/crate/crate0_bump.png");
+	crateNormalMap = textureLoader.load("lib/textures/crate/crate0_normal.png");
 
     crate = new THREE.Mesh(
         new THREE.BoxGeometry(3,3,3),
         new THREE.MeshPhongMaterial({
             color: 0xffffff,
-            map: crateTexture
+            map: crateTexture,
+            bumpMap:crateBumpMap,
+			normalMap:crateNormalMap
         })
     );
     scene.add(crate);
@@ -82,7 +86,8 @@ function animate() {
 
     mesh.rotation.x += 0.01;
     mesh.rotation.y += 0.02;
-
+    crate.rotation.y += 0.01;
+    
     // Keyboard movement inputs
     if (keyboard[87]) { // W key
         camera.position.x -= Math.sin(camera.rotation.y) * player.speed;

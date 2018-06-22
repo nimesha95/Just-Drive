@@ -1,4 +1,4 @@
-var scene, camera, renderer, mesh;
+var scene, camera, renderer, mesh, clock;
 var meshFloor, ambientLight, light;
 
 var crate, crateTexture, crateNormalMap, crateBumpMap;
@@ -6,7 +6,7 @@ var crate, crateTexture, crateNormalMap, crateBumpMap;
 var keyboard = {};
 var player = {
     height: 1.8,
-    speed: 0.2,
+    speed: 0.1,
     turnSpeed: Math.PI * 0.02
 };
 
@@ -31,7 +31,13 @@ var models = {
         obj: "lib/models/naturePack_133.obj",
         mtl: "lib/models/naturePack_133.mtl",
         mesh: null
-    }
+    },
+    uzi: {
+		obj:"lib/models/uziGold.obj",
+		mtl:"lib/models/uziGold.mtl",
+		mesh: null,
+		castShadow:false
+	}
 };
 
 // Meshes index
@@ -40,6 +46,7 @@ var meshes = {};
 function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(90, 1280 / 720, 0.1, 1000);
+    clock = new THREE.Clock();
 
     loadingScreen.box.position.set(0, 0, 5);
     loadingScreen.camera.lookAt(loadingScreen.box.position);
@@ -122,8 +129,15 @@ function init() {
 
                     mesh.traverse(function (node) {
                         if (node instanceof THREE.Mesh) {
-                            node.castShadow = true;
-                            node.receiveShadow = true;
+                            if('castShadow' in models[key])
+								node.castShadow = models[key].castShadow;
+							else
+								node.castShadow = true;
+							
+							if('receiveShadow' in models[key])
+								node.receiveShadow = models[key].receiveShadow;
+							else
+								node.receiveShadow = true;
                         }
                     });
                     models[key].mesh = mesh;
@@ -158,6 +172,11 @@ function onResourcesLoaded() {
     meshes["rock1"].position.set(-5, 0, 4);
     scene.add(meshes["rock1"]);
 
+    // player weapon
+	meshes["playerweapon"] = models.uzi.mesh.clone();
+	meshes["playerweapon"].position.set(0,2,0);
+	meshes["playerweapon"].scale.set(10,10,10);
+	scene.add(meshes["playerweapon"]);
 }
 
 function animate() {
@@ -174,6 +193,9 @@ function animate() {
 
     requestAnimationFrame(animate);
 
+    var time = Date.now() * 0.0005;
+    var delta = clock.getDelta();
+    
     mesh.rotation.x += 0.01;
     mesh.rotation.y += 0.02;
     crate.rotation.y += 0.01;
@@ -202,6 +224,18 @@ function animate() {
     if (keyboard[39]) { //right arrow key
         camera.rotation.y += player.turnSpeed;;
     }
+
+    // position the gun in front of the camera
+	meshes["playerweapon"].position.set(
+		camera.position.x - Math.sin(camera.rotation.y + Math.PI/6) * 0.75,
+		camera.position.y - 0.5 + Math.sin(time*4 + camera.position.x + camera.position.z)*0.01,
+		camera.position.z + Math.cos(camera.rotation.y + Math.PI/6) * 0.75
+	);
+	meshes["playerweapon"].rotation.set(
+		camera.rotation.x,
+		camera.rotation.y - Math.PI,
+		camera.rotation.z
+	);
 
     renderer.render(scene, camera);
 }

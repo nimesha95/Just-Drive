@@ -67,6 +67,19 @@ function init() {
     crate.receiveShadow = true;
     crate.castShadow = true;
 
+    var mtlLoader = new THREE.MTLLoader();
+    mtlLoader.load("lib/models/naturePack_133.mtl",function(materials){
+        materials.preload();
+        var objLoader = new THREE.OBJLoader();
+        objLoader.setMaterials(materials);
+
+        objLoader.load("lib/models/naturePack_133.obj",function(mesh){
+            scene.add(mesh);
+            mesh.position.set(-5,0,4)
+        })
+    })
+
+
     camera.position.set(0, player.height, -5);
     camera.lookAt(new THREE.Vector3(0, player.height, 0));
 

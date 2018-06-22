@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "start": "node app.js",
+    "start": "nodemon app.js",
     "dev": "nodemon --watch *",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

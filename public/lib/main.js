@@ -1,7 +1,7 @@
 var scene, camera, renderer, mesh;
-var meshFloor , ambientLight,light;
+var meshFloor, ambientLight, light;
 
-var crate , crateTexture , crateNormalMap, crateBumpMap;
+var crate, crateTexture, crateNormalMap, crateBumpMap;
 
 var keyboard = {};
 var player = {
@@ -10,9 +10,50 @@ var player = {
     turnSpeed: Math.PI * 0.02
 };
 
+var loadingScreen = {
+    scene: new THREE.Scene(),
+    camera: new THREE.PerspectiveCamera(90, 1280 / 720, 0.1, 100),
+    box: new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, 0.5, 0.5),
+        new THREE.MeshBasicMaterial({
+            color: 0x4444ff
+        })
+    )
+}
+
+var RESOURCES_LOADED = false;
+
+
+
+// Models index
+var models = {
+    rock: {
+        obj: "lib/models/naturePack_133.obj",
+        mtl: "lib/models/naturePack_133.mtl",
+        mesh: null
+    }
+};
+
+// Meshes index
+var meshes = {};
+
 function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(90, 1280 / 720, 0.1, 1000);
+
+    loadingScreen.box.position.set(0, 0, 5);
+    loadingScreen.camera.lookAt(loadingScreen.box.position);
+    loadingScreen.scene.add(loadingScreen.box);
+
+    loadingManager = new THREE.LoadingManager();
+    loadingManager.onProgress = function (item, loaded, total) {
+        console.log(item, loaded, total);
+    };
+    loadingManager.onLoad = function () {
+        console.log("loaded all resources");
+        RESOURCES_LOADED = true;
+        onResourcesLoaded();
+    };
 
     mesh = new THREE.Mesh(
         new THREE.BoxGeometry(1, 1, 1),
@@ -37,48 +78,61 @@ function init() {
     meshFloor.receiveShadow = true;
     scene.add(meshFloor);
 
-    ambientLight = new THREE.AmbientLight(0xffffff , 0.2);
+    ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
     scene.add(ambientLight);
 
-    light = new THREE.PointLight(0xffffff,0.8,18);
-    light.position.set(-3,6,-3);
+    light = new THREE.PointLight(0xffffff, 0.8, 18);
+    light.position.set(-3, 6, -3);
     light.castShadow = true;
     light.shadow.camera.near = 0.1;
     light.shadow.camera.far = 25;
     scene.add(light);
 
 
-    var textureLoader  = new THREE.TextureLoader();
+    var textureLoader = new THREE.TextureLoader(loadingManager);
     crateTexture = textureLoader.load("lib/textures/crate/crate0_diffuse.png");
     crateBumpMap = textureLoader.load("lib/textures/crate/crate0_bump.png");
-	crateNormalMap = textureLoader.load("lib/textures/crate/crate0_normal.png");
+    crateNormalMap = textureLoader.load("lib/textures/crate/crate0_normal.png");
 
     crate = new THREE.Mesh(
-        new THREE.BoxGeometry(3,3,3),
+        new THREE.BoxGeometry(3, 3, 3),
         new THREE.MeshPhongMaterial({
             color: 0xffffff,
             map: crateTexture,
-            bumpMap:crateBumpMap,
-			normalMap:crateNormalMap
+            bumpMap: crateBumpMap,
+            normalMap: crateNormalMap
         })
     );
     scene.add(crate);
-    crate.position.set(2.5,3/2,2.5);
+    crate.position.set(2.5, 3 / 2, 2.5);
     crate.receiveShadow = true;
     crate.castShadow = true;
 
-    var mtlLoader = new THREE.MTLLoader();
-    mtlLoader.load("lib/models/naturePack_133.mtl",function(materials){
-        materials.preload();
-        var objLoader = new THREE.OBJLoader();
-        objLoader.setMaterials(materials);
+    for (var _key in models) {
+        (function (key) {
 
-        objLoader.load("lib/models/naturePack_133.obj",function(mesh){
-            scene.add(mesh);
-            mesh.position.set(-5,0,4)
-        })
-    })
+            var mtlLoader = new THREE.MTLLoader(loadingManager);
+            mtlLoader.load(models[key].mtl, function (materials) {
+                materials.preload();
 
+                var objLoader = new THREE.OBJLoader(loadingManager);
+
+                objLoader.setMaterials(materials);
+                objLoader.load(models[key].obj, function (mesh) {
+
+                    mesh.traverse(function (node) {
+                        if (node instanceof THREE.Mesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                        }
+                    });
+                    models[key].mesh = mesh;
+
+                });
+            });
+
+        })(_key);
+    }
 
     camera.position.set(0, player.height, -5);
     camera.lookAt(new THREE.Vector3(0, player.height, 0));
@@ -94,13 +148,36 @@ function init() {
     animate();
 }
 
+// Runs when all resources are loaded
+function onResourcesLoaded() {
+
+    // Clone models into meshes.
+    meshes["rock1"] = models.rock.mesh.clone();
+
+    // Reposition individual meshes, then add meshes to scene
+    meshes["rock1"].position.set(-5, 0, 4);
+    scene.add(meshes["rock1"]);
+
+}
+
 function animate() {
+    if (RESOURCES_LOADED == false) {
+        requestAnimationFrame(animate);
+
+        loadingScreen.box.position.x -= 0.05;
+        if (loadingScreen.box.position.x < -10) loadingScreen.box.position.x = 10;
+        loadingScreen.box.position.y = Math.sin(loadingScreen.box.position.x);
+
+        renderer.render(loadingScreen.scene, loadingScreen.camera);
+        return;
+    }
+
     requestAnimationFrame(animate);
 
     mesh.rotation.x += 0.01;
     mesh.rotation.y += 0.02;
     crate.rotation.y += 0.01;
-    
+
     // Keyboard movement inputs
     if (keyboard[87]) { // W key
         camera.position.x -= Math.sin(camera.rotation.y) * player.speed;

@@ -1,22 +1,51 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>ජේසොන් අයියා</title>
+    <meta charset="UTF-8">
+    <title>Race car game</title>
+    <script src="lib/js/three.min.js"></script>
+    <script src="lib/js/Detector.js"></script>
+    <script src="lib/js/OrbitControls.js"></script>
+    <script src="lib/js/THREEx.KeyboardState.js"></script>
+    <script src="lib/js/THREEx.FullScreen.js"></script>
+    <script src="lib/js/THREEx.WindowResize.js"></script>
+    <style>
+        body {
+            background-color: #000;
+            overflow: hidden;
+        }
 
-    <link rel="icon" href="favicon.ico" type="image/gif" sizes="16x16">
+        canvas {
+            display: block;
+            margin: 0 auto;
+            top: 50px;
+        }
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        .score-container {
+            /*background-color: red;*/
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            transition: transform 0.5s 4s;
+        }
 
-    <script src="lib/src/three.min.js"></script>
-    <script src="lib/main.js"></script>
-    <script src="lib/src/MTLLoader.js"></script>
-    <script src="lib/src/OBJLoader.js"></script>
+        .score-container #score {
+            color: white;
+            font-size: 8vh;
+            font-family: 'Exo', sans-serif;
+            font-weight: 700;
+        }
+    </style>
 </head>
-
 <body>
-    <div id="divID"></div>
-</body>
+<div class="score-container">
+    <div id="score"></div>
+</div>
+<!--<div id="message" style="color:green; background-color: #a06cc2"></div>-->
 
+<div id="ThreeJS"></div>
+<audio src="lib/sound/explode.mp3" preload="auto" id="explode_sound"></audio>
+
+<script src="lib/js/index.js"></script>
+</body>
 </html>

@@ -49,9 +49,16 @@ var bullets = [];
 
 
 function init() {
-    scene = new THREE.Scene();
+    scene = new Physijs.Scene();
     camera = new THREE.PerspectiveCamera(90, 1280 / 720, 0.1, 1000);
     clock = new THREE.Clock();
+
+    scene.addEventListener(
+        'update',
+        function() {
+            scene.simulate( undefined, 1 );
+        }
+    ),
 
     loadingScreen.box.position.set(0, 0, 5);
     loadingScreen.camera.lookAt(loadingScreen.box.position);
@@ -78,6 +85,7 @@ function init() {
     mesh.receiveShadow = true;
     mesh.castShadow = true;
     scene.add(mesh);
+    
 
     meshFloor = new THREE.Mesh(
         new THREE.PlaneGeometry(20, 20, 10, 10),
@@ -106,7 +114,7 @@ function init() {
     crateBumpMap = textureLoader.load("lib/textures/crate/crate0_bump.png");
     crateNormalMap = textureLoader.load("lib/textures/crate/crate0_normal.png");
 
-    crate = new THREE.Mesh(
+    crate = new Physijs.BoxMesh(
         new THREE.BoxGeometry(3, 3, 3),
         new THREE.MeshPhongMaterial({
             color: 0xffffff,
@@ -182,7 +190,9 @@ function onResourcesLoaded() {
 	meshes["playerweapon"] = models.uzi.mesh.clone();
 	meshes["playerweapon"].position.set(0,2,0);
 	meshes["playerweapon"].scale.set(10,10,10);
-	scene.add(meshes["playerweapon"]);
+    scene.add(meshes["playerweapon"]);
+    
+    scene.simulate();
 }
 
 function animate() {

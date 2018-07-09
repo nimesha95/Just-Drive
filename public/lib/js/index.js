@@ -1,7 +1,11 @@
-// 定义全局变量
+// Defining global variables
 var container, scene, camera, renderer, controls;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock;
+
+var stats = new Stats();
+stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild( stats.dom );
 
 var movingCube;
 var collideMeshList = [];
@@ -39,7 +43,7 @@ function init() {
     THREEx.WindowResize(renderer, camera);
     controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-    // 加入两条直线
+    // Add two lines
     geometry = new THREE.Geometry();
     geometry.vertices.push(new THREE.Vector3(-250, -1, -3000));
     geometry.vertices.push(new THREE.Vector3(-300, -1, 200));
@@ -48,6 +52,7 @@ function init() {
     });
     var line1 = new THREE.Line(geometry, material);
     scene.add(line1);
+    
     geometry = new THREE.Geometry();
     geometry.vertices.push(new THREE.Vector3(250, -1, -3000));
     geometry.vertices.push(new THREE.Vector3(300, -1, 200));
@@ -55,7 +60,7 @@ function init() {
     scene.add(line2);
 
 
-    // 加入控制的cube
+    // Joined control cube
     var cubeGeometry = new THREE.CubeGeometry(50, 25, 60, 5, 5, 5);
     var wireMaterial = new THREE.MeshBasicMaterial({
         color: 0x00ff00,
@@ -73,8 +78,10 @@ function init() {
 }
 
 function animate() {
-    requestAnimationFrame(animate);
+    stats.begin();
     update();
+    stats.end();
+    requestAnimationFrame(animate);
     renderer.render(scene, camera);
 
 }
@@ -128,11 +135,12 @@ function update() {
 
 
     var originPoint = movingCube.position.clone();
-
+    //console.log("Moving pos: "+JSON.stringify(originPoint))
+    //console.log("stuuf: "+movingCube.geometry.vertices.length)
     for (var vertexIndex = 0; vertexIndex < movingCube.geometry.vertices.length; vertexIndex++) {
-        // 顶点原始坐标
+        // Vertex original coordinates
         var localVertex = movingCube.geometry.vertices[vertexIndex].clone();
-        // 顶点经过变换后的坐标
+        // The transformed coordinates of the vertex
         var globalVertex = localVertex.applyMatrix4(movingCube.matrix);
         var directionVector = globalVertex.sub(movingCube.position);
 
@@ -183,12 +191,12 @@ function update() {
 }
 
 
-// 返回一个介于min和max之间的随机数
+// Returns a random number between min and max
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
 
-// 返回一个介于min和max之间的整型随机数
+// Returns an integer random number between min and max
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }

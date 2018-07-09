@@ -1,8 +1,8 @@
-/**
- * @author alteredq / http://alteredqualia.com/
- * @author mr.doob / http://mrdoob.com/
- */
+/*
+	This code set handles the processes regarding webgl
+	It checks whether browser supports the webGL and returns errors 
 
+*/
 Detector = {
 
 	canvas: !! window.CanvasRenderingContext2D,
